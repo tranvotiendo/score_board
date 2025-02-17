@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Score Tracker</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            background-image: url('https://i.pinimg.com/originals/6f/a9/c3/6fa9c33211ce7c08f2cc4fcef6144b7d.png');
+            background-size: cover;
+            background-position: center;
+        }
+        .group { margin-bottom: 20px; }
+        .score { font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; background: rgba(255, 255, 255, 0.8); }
+        th, td { border: 1px solid black; padding: 5px; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>Quiz Score Tracker</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Câu hỏi</th>
+                <th>Nhóm 1</th>
+                <th>Nhóm 2</th>
+                <th>Nhóm 3</th>
+                <th>Nhóm 4</th>
+                <th>Nhóm 5</th>
+            </tr>
+        </thead>
+        <tbody id="quizTable">
+        </tbody>
+    </table>
+    <h2>Kết quả</h2>
+    <div id="scores">
+        <p>Nhóm 1: <span class="score" id="score1">0</span></p>
+        <p>Nhóm 2: <span class="score" id="score2">0</span></p>
+        <p>Nhóm 3: <span class="score" id="score3">0</span></p>
+        <p>Nhóm 4: <span class="score" id="score4">0</span></p>
+        <p>Nhóm 5: <span class="score" id="score5">0</span></p>
+    </div>
+    <button onclick="saveData()">Lưu Dữ Liệu</button>
+    <button onclick="loadData()">Tải Dữ Liệu</button>
+    <script>
+        const quizTable = document.getElementById("quizTable");
+        const scores = [0, 0, 0, 0, 0];
+
+        function updateScores() {
+            for (let i = 0; i < 5; i++) {
+                let correctAnswers = document.querySelectorAll(`.group${i + 1}-correct:checked`).length;
+                let wrongAnswers = document.querySelectorAll(`.group${i + 1}-wrong:checked`).length;
+                scores[i] = correctAnswers - wrongAnswers;
+                document.getElementById(`score${i + 1}`).textContent = scores[i];
+            }
+            saveData();
+        }
+
+        function saveData() {
+            const data = {};
+            document.querySelectorAll("input[type=checkbox]").forEach((checkbox, index) => {
+                data[index] = checkbox.checked;
+            });
+            localStorage.setItem("quizData", JSON.stringify(data));
+            localStorage.setItem("quizScores", JSON.stringify(scores));
+        }
+
+        function loadData() {
+            const data = JSON.parse(localStorage.getItem("quizData"));
+            if (data) {
+                document.querySelectorAll("input[type=checkbox]").forEach((checkbox, index) => {
+                    checkbox.checked = data[index] || false;
+                });
+            }
+            const savedScores = JSON.parse(localStorage.getItem("quizScores"));
+            if (savedScores) {
+                for (let i = 0; i < 5; i++) {
+                    document.getElementById(`score${i + 1}`).textContent = savedScores[i];
+                }
+            }
+        }
+
+        for (let i = 1; i <= 40; i++) {
+            let row = `<tr><td>${i}</td>`;
+            for (let j = 1; j <= 5; j++) {
+                row += `<td>
+                            <input type="checkbox" class="group${j}-correct" onchange="updateScores()"> Đúng
+                            <input type="checkbox" class="group${j}-wrong" onchange="updateScores()"> Sai
+                        </td>`;
+            }
+            row += "</tr>";
+            quizTable.innerHTML += row;
+        }
+        
+        loadData();
+    </script>
+</body>
+</html>
